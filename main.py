@@ -23,3 +23,4 @@ app.include_router(auth.router)
 @app.get("/")
 def read_root():
     return {"message": "API funcionando correctamente al 100%"}
+#guardate
