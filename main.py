@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from config.database import engine, Base
 from routes import auth
 from fastapi.middleware.cors import CORSMiddleware
+from routes import product
 
 # Crear tablas si faltara alguna
 Base.metadata.create_all(bind=engine)
@@ -19,7 +20,7 @@ app.add_middleware(
 
 # Registrar las rutas de autenticación
 app.include_router(auth.router)
-
+app.include_router(product.router)
 @app.get("/")
 def read_root():
     return {"message": "API funcionando correctamente al 100%"}

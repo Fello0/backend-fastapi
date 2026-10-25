@@ -18,13 +18,15 @@ class AuthController:
         # Validar credenciales (US01 - Escenario 2)
         if not user or user.password != user_data.password:
             raise HTTPException(status_code=401, detail="Usuario o contraseña inválidos")
-
+            
         # Generar Token JWT
         payload = {
             "sub": user.username,
             "id": user.id,
+            "role": user.role,  # <-- AGREGADO PARA LA US05
             "exp": datetime.utcnow() + timedelta(days=1)
         }
         token = jwt.encode(payload, self.secret_key, algorithm="HS256")
-
-        return {"access_token": token, "user_id": user.id}
+        
+        # <-- AGREGADO EL ROL EN EL RETURN PARA GUARDARLO EN ASYNCSTORAGE
+        return {"access_token": token, "user_id": user.id, "role": user.role}
