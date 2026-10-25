@@ -15,18 +15,24 @@ class AuthController:
         # Buscar usuario en la base de datos
         user = self.db.query(User).filter(User.username == user_data.username).first()
         
-        # Validar credenciales (US01 - Escenario 2)
+        # Validar credenciales (US01)
         if not user or user.password != user_data.password:
             raise HTTPException(status_code=401, detail="Usuario o contraseña inválidos")
             
+        # Detecta automáticamente si en TiDB se llama 'role' o 'rol'
+        role_value = getattr(user, 'role', getattr(user, 'rol', 'cliente1'))
+
         # Generar Token JWT
         payload = {
             "sub": user.username,
             "id": user.id,
-            "role": user.role,  # <-- AGREGADO PARA LA US05
+            "role": role_value,
             "exp": datetime.utcnow() + timedelta(days=1)
         }
         token = jwt.encode(payload, self.secret_key, algorithm="HS256")
         
-        # <-- AGREGADO EL ROL EN EL RETURN PARA GUARDARLO EN ASYNCSTORAGE
-        return {"access_token": token, "user_id": user.id, "role": user.role}
+        return {
+            "access_token": token, 
+            "user_id": user.id, 
+            "role": role_value
+        }

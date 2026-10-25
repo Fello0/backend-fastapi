@@ -1,27 +1,26 @@
 from fastapi import FastAPI
-from config.database import engine, Base
-from routes import auth
 from fastapi.middleware.cors import CORSMiddleware
-from routes import product
+from config.database import Base, engine
 
-# Crear tablas si faltara alguna
+# 1. DEBES IMPORTAR AMBOS ARCHIVOS DE RUTAS AQUÍ:
+from routes import auth, product
+
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Mi API Mobile - FastAPI")
+app = FastAPI(title="API Full Stack Móvil")
 
-# Agregar middleware inmediatamente después de crear la app
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8081"], # Solo tu web local
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Registrar las rutas de autenticación
+# 2. DEBES REGISTRAR AMBAS RUTAS AQUÍ:
 app.include_router(auth.router)
-app.include_router(product.router)
+app.include_router(product.router)  # <-- ESTA ES LA LÍNEA QUE TE FALTA
+
 @app.get("/")
 def read_root():
-    return {"message": "API funcionando correctamente al 100%"}
-#guardate
+    return {"status": "ok", "message": "API conectada correctamente"}
