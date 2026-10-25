@@ -23,3 +23,18 @@ class ProductController:
             # Manejo de error de consulta exigido en US05
             raise HTTPException(status_code=404, detail="Producto no disponible")
         return product
+
+    def delete_product(self, product_id: int):
+        """Elimina un producto de forma real en TiDB. Solo alcanzable por admin1."""
+        product = self.db.query(Product).filter(Product.id == product_id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail="Producto no disponible")
+
+        title = product.title
+        self.db.delete(product)
+        self.db.commit()
+
+        return {
+            "message": f"Producto '{title}' eliminado correctamente",
+            "id": product_id,
+        }

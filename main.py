@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config.database import Base, engine
 
-# 1. DEBES IMPORTAR AMBOS ARCHIVOS DE RUTAS AQUÍ:
-from routes import auth, product
+# 1. DEBES IMPORTAR TODOS LOS ARCHIVOS DE RUTAS AQUÍ:
+from routes import auth, product, users
 
 Base.metadata.create_all(bind=engine)
 
@@ -17,9 +17,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 2. DEBES REGISTRAR AMBAS RUTAS AQUÍ:
+# 2. DEBES REGISTRAR TODAS LAS RUTAS AQUÍ:
 app.include_router(auth.router)
-app.include_router(product.router)  # <-- ESTA ES LA LÍNEA QUE TE FALTA
+app.include_router(product.router)
+app.include_router(users.router)
 
 @app.get("/")
 def read_root():
