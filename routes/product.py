@@ -4,7 +4,7 @@ from typing import List
 from config.database import get_db
 from config.security import verify_admin_role
 from models.user import User
-from schemas.product import ProductResponse
+from schemas.product import ProductResponse, ProductUpdate
 from controllers.product_controller import ProductController
 
 router = APIRouter(prefix="/products", tags=["Productos"])
@@ -28,6 +28,17 @@ def get_products_by_category(category: str, db: Session = Depends(get_db)):
 def get_product(product_id: int, db: Session = Depends(get_db)):
     controller = ProductController(db)
     return controller.get_product_by_id(product_id)
+
+@router.put("/{product_id}", response_model=ProductResponse, tags=["Productos (Admin)"])
+def update_product(
+    product_id: int,
+    payload: ProductUpdate,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(verify_admin_role),
+):
+    """Actualiza un producto. Protegido con RBAC: solo admin1 (403 para el resto)."""
+    controller = ProductController(db)
+    return controller.update_product(product_id, payload)
 
 @router.delete("/{product_id}", tags=["Productos (Admin)"])
 def delete_product(

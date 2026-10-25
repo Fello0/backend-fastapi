@@ -7,6 +7,9 @@ class ProductBase(BaseModel):
     category: str
     image: str
 
+class ProductUpdate(ProductBase):
+    pass
+
 class ProductResponse(ProductBase):
     id: int
 
