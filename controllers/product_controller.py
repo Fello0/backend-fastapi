@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from models.product import Product
-from schemas.product import ProductUpdate
+from schemas.product import ProductUpdate, ProductCreate
+
 
 class ProductController:
     def __init__(self, db: Session):
@@ -25,8 +26,37 @@ class ProductController:
             raise HTTPException(status_code=404, detail="Producto no disponible")
         return product
 
+    def create_product(self, payload: ProductCreate):
+        """Crea un nuevo producto en TiDB. Solo alcanzable por admin1 (US06)."""
+        title = (payload.title or "").strip()
+        if not title:
+            raise HTTPException(status_code=400, detail="El título del producto es obligatorio.")
+
+        if payload.price is None or payload.price < 0:
+            raise HTTPException(
+                status_code=400,
+                detail="El precio debe ser un número mayor o igual a 0.",
+            )
+
+        category = (payload.category or "").strip()
+        if not category:
+            raise HTTPException(status_code=400, detail="La categoría del producto es obligatoria.")
+
+        product = Product(
+            title=title,
+            price=payload.price,
+            description=(payload.description or "").strip(),
+            category=category,
+            image=(payload.image or "").strip(),
+        )
+
+        self.db.add(product)
+        self.db.commit()
+        self.db.refresh(product)
+        return product
+
     def update_product(self, product_id: int, payload: ProductUpdate):
-        """Actualiza un producto existente en TiDB. Solo alcanzable por admin1."""
+        """Actualiza un producto existente en TiDB. Solo alcanzable por admin1 (US07)."""
         product = self.db.query(Product).filter(Product.id == product_id).first()
         if not product:
             raise HTTPException(status_code=404, detail="Producto no disponible")
@@ -52,7 +82,7 @@ class ProductController:
         return product
 
     def delete_product(self, product_id: int):
-        """Elimina un producto de forma real en TiDB. Solo alcanzable por admin1."""
+        """Elimina un producto de forma real en TiDB. Solo alcanzable por admin1 (US08)."""
         product = self.db.query(Product).filter(Product.id == product_id).first()
         if not product:
             raise HTTPException(status_code=404, detail="Producto no disponible")

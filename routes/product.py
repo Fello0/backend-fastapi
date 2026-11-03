@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from typing import List
 from config.database import get_db
 from config.security import verify_admin_role
 from models.user import User
-from schemas.product import ProductResponse, ProductUpdate
+from schemas.product import ProductResponse, ProductUpdate, ProductCreate
 from controllers.product_controller import ProductController
 
 router = APIRouter(prefix="/products", tags=["Productos"])
@@ -24,6 +24,21 @@ def get_products_by_category(category: str, db: Session = Depends(get_db)):
     controller = ProductController(db)
     return controller.get_products_by_category(category)
 
+@router.post(
+    "/",
+    response_model=ProductResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Productos (Admin)"],
+)
+def create_product(
+    payload: ProductCreate,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(verify_admin_role),
+):
+    """Crea un producto nuevo (US06). Protegido con RBAC: solo admin1 (403 para el resto)."""
+    controller = ProductController(db)
+    return controller.create_product(payload)
+
 @router.get("/{product_id}", response_model=ProductResponse)
 def get_product(product_id: int, db: Session = Depends(get_db)):
     controller = ProductController(db)
@@ -36,7 +51,7 @@ def update_product(
     db: Session = Depends(get_db),
     _admin: User = Depends(verify_admin_role),
 ):
-    """Actualiza un producto. Protegido con RBAC: solo admin1 (403 para el resto)."""
+    """Actualiza un producto (US07). Protegido con RBAC: solo admin1 (403 para el resto)."""
     controller = ProductController(db)
     return controller.update_product(product_id, payload)
 
@@ -46,6 +61,6 @@ def delete_product(
     db: Session = Depends(get_db),
     _admin: User = Depends(verify_admin_role),
 ):
-    """Elimina un producto. Protegido con RBAC: solo admin1 (403 para el resto)."""
+    """Elimina un producto (US08). Protegido con RBAC: solo admin1 (403 para el resto)."""
     controller = ProductController(db)
     return controller.delete_product(product_id)
